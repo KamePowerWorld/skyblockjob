@@ -4,6 +4,7 @@ import io.papermc.paper.event.player.ChatEvent;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.WorldType;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.enchantments.Enchantment;
@@ -25,6 +26,7 @@ import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Team;
+import org.bukkit.util.BoundingBox;
 import org.bukkit.util.RayTraceResult;
 
 import java.util.*;
@@ -366,18 +368,35 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
                     playerHorns.putIfAbsent(playerUuid, new HashSet<>());
                     Set<UUID> registeredPlayers = playerHorns.get(playerUuid);
 
-                    if (registeredPlayers.size() < 2) {
-                        registeredPlayers.add(target.getUniqueId());
-                        player.sendMessage(target.getName() + "さんを招集の角笛に入れたよ");
+                    if (target.isSneaking()) {
+                        if (registeredPlayers.size() < 2) {
+                            registeredPlayers.add(target.getUniqueId());
+                            player.sendMessage(target.getName() + "さんを招集の角笛に入れたよ");
+                            target.sendMessage(player.getName() + "さんがあなたを招集の角笛に入れたよ");
+                        } else {
+                            player.sendMessage("招集の角笛が満杯だよ");
+                        }
                     } else {
-                        player.sendMessage("招集の角笛が満杯だよ");
+                        player.sendMessage("招集するためには相手がシフトを押している必要があるよ");
+                        target.sendMessage(player.getName() + "さんがあなたを招集の角笛に入れようとしています。招集されるにはシフトを押してください");
                     }
                 } else {
-                    player.sendMessage("プレイヤーが見つからないよ");
+                    player.sendMessage("プレイヤーが見つからないよ。招集したいプレイヤーを右クリックしてね");
                 }
             } else {
                 // 通常の右クリックでリスト内のプレイヤーを自分にテレポート
                 if (playerHorns.containsKey(playerUuid)) {
+                    // 禁止エリアにいるかどうかをチェック
+                    BoundingBox box = new BoundingBox(
+                            295, 319, 45,
+                            224, 315, 24
+                    );
+                    if (player.getLocation().getWorld().getWorldType() == WorldType.NORMAL
+                            && box.contains(player.getLocation().toVector())) {
+                        player.sendMessage("禁止エリアにいるため、招集できません");
+                        return;
+                    }
+
                     for (UUID targetPlayerUuid : playerHorns.get(playerUuid)) {
                         Player targetPlayer = player.getServer().getPlayer(targetPlayerUuid);
                         if (targetPlayer != null) {
@@ -399,7 +418,7 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
                 player.getLocation().getDirection(),
                 10, // 視線のトレース範囲を10ブロックに設定
                 1.0,
-                entity -> entity instanceof Player && entity != player && ((Player) entity).isSneaking()
+                entity -> entity instanceof Player && entity != player
         );
 
         if (result != null && result.getHitEntity() instanceof Player) {
