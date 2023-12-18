@@ -113,9 +113,12 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
                         event.setDropItems(false);
                         event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), new ItemStack(Material.REDSTONE, 1));
                     } else {
-                        // 石炭、鉄、ラピスラズリをドロップ
-                        int amount = 1 + random.nextInt(2);
-                        event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), new ItemStack(Material.LAPIS_LAZULI, amount));
+                        // ラピスラズリをドロップ
+                        int amountLapis = 1 + random.nextInt(2);
+                        event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), new ItemStack(Material.LAPIS_LAZULI, amountLapis));
+                        // 石炭をドロップ
+                        int amountCoal = 1 + random.nextInt(2);
+                        event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), new ItemStack(Material.LAPIS_LAZULI, amountCoal));
                     }
                 }
             }
