@@ -1,0 +1,4 @@
+name: skyblockjob
+version: '${project.version}'
+main: com.github.kumo0621.skyblockjob.Skyblockjob
+api-version: '1.20'
