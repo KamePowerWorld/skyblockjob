@@ -104,8 +104,7 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
         ItemStack tool = player.getInventory().getItemInMainHand();
         Material material = block.getType();
         // プレイヤーが「電気工事士」チームに属しているかどうかをチェック
-        Team team = player.getScoreboard().getTeam("鍛冶屋");
-        if (team != null && team.hasEntry(player.getName())) {
+        if (player.getScoreboard().getEntryTeam(player.getName()).getName().equals("鍛冶屋")) {
             // ブロックがレッドストーン鉱石かどうかをチェック
             if (event.getBlock().getType() == Material.REDSTONE_ORE) {
                 // レッドストーンがパワーを受けているかどうかをチェック
@@ -123,6 +122,7 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
                         event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), new ItemStack(Material.LAPIS_LAZULI, amountCoal));
                     }
                 }
+                event.setDropItems(false);
             }
         }
         if (player.getScoreboard().getEntryTeam(player.getName()).getName().equals("石工")) {
@@ -165,9 +165,23 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
                 case GOLD_ORE:
                 case IRON_ORE:
                     onUPItem(event);
+                    event.setDropItems(false);
                     break;
                 default:
                     break;
+            }
+        }if (event.getBlock().getType() != Material.OBSIDIAN) {
+            return;
+        }
+
+        if (player.getScoreboard().getEntryTeam(player.getName()).getName().equals("石工")) {
+            event.setDropItems(false);
+            ItemStack item = generateRandomDrop(player);
+            if (item != null) {
+                int fortuneLevel = player.getInventory().getItemInMainHand().getEnchantmentLevel(org.bukkit.enchantments.Enchantment.LOOT_BONUS_BLOCKS);
+                int amount = (int) (item.getAmount() * (1 + 0.5 * fortuneLevel));
+                item.setAmount(amount);
+                event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), item);
             }
         }
     }
@@ -183,7 +197,22 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
         event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), new ItemStack(item, quantity));
     }
 
+    private ItemStack generateRandomDrop(Player player) {
+        Random random = new Random();
+        int chance = random.nextInt(100);
 
+        if (chance < 10) { // ダイヤモンドの確率を10%に
+            return new ItemStack(Material.DIAMOND, 32);
+        } else if (chance < 20) { // ネザライトの確率を10%に
+            return new ItemStack(Material.NETHERITE_SCRAP, 32);
+        } else if (chance < 50) { // 鉄の確率を30%に
+            return new ItemStack(Material.IRON_INGOT, 32);
+        } else if (chance < 80) { // 金の確率を30%に
+            return new ItemStack(Material.GOLD_INGOT, 32);
+        } else { // 銅の確率を20%に
+            return new ItemStack(Material.COPPER_INGOT, 32);
+        }
+    }
     private void dropFish(Location loc) {
         Random random = new Random();
         int numberOfFish = random.nextInt(5) + 15; // 5から9までのランダムな数の魚
