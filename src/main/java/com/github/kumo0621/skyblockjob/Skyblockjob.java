@@ -119,10 +119,9 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
                         event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), new ItemStack(Material.LAPIS_LAZULI, amountLapis));
                         // 石炭をドロップ
                         int amountCoal = 1 + random.nextInt(2);
-                        event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), new ItemStack(Material.LAPIS_LAZULI, amountCoal));
+                        event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), new ItemStack(COAL, amountCoal));
                     }
                 }
-                event.setDropItems(false);
             }
         }
         if (player.getScoreboard().getEntryTeam(player.getName()).getName().equals("石工")) {
@@ -133,7 +132,6 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
                     GOLD_ORE,
                     Material.DIAMOND_ORE,
                     Material.LAPIS_ORE,
-                    Material.REDSTONE_ORE,
                     Material.EMERALD_ORE,
                     Material.NETHER_QUARTZ_ORE,
                     Material.NETHER_GOLD_ORE,
@@ -202,15 +200,15 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
         int chance = random.nextInt(100);
 
         if (chance < 10) { // ダイヤモンドの確率を10%に
-            return new ItemStack(Material.DIAMOND, 32);
+            return new ItemStack(Material.DIAMOND, 10);
         } else if (chance < 20) { // ネザライトの確率を10%に
-            return new ItemStack(Material.NETHERITE_SCRAP, 32);
+            return new ItemStack(Material.NETHERITE_SCRAP, 10);
         } else if (chance < 50) { // 鉄の確率を30%に
-            return new ItemStack(Material.IRON_INGOT, 32);
+            return new ItemStack(Material.IRON_INGOT, 10);
         } else if (chance < 80) { // 金の確率を30%に
-            return new ItemStack(Material.GOLD_INGOT, 32);
+            return new ItemStack(Material.GOLD_INGOT, 10);
         } else { // 銅の確率を20%に
-            return new ItemStack(Material.COPPER_INGOT, 32);
+            return new ItemStack(Material.COPPER_INGOT, 10);
         }
     }
     private void dropFish(Location loc) {
@@ -455,7 +453,30 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
         }
         return null;
     }
+    @EventHandler
+    public void onPistonBreak(BlockBreakEvent event) {
+        Block block = event.getBlock();
 
+        if (event.getBlock().getType() == PISTON) {
+            // レッドストーンがパワーを受けているかどうかをチェック
+            if (event.getBlock().isBlockPowered() || event.getBlock().isBlockIndirectlyPowered()) {
+                Random rand = new Random();
+                int chance = rand.nextInt(100);
+
+                // 鎖、レッドストーン、鉄をドロップする確率
+                if (chance < 50) {
+                    block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.CHAIN));
+                } else if (chance < 60) {
+                    block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.REDSTONE));
+                }else if (chance < 90) {
+                        block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(IRON_INGOT));
+
+                }
+                // ピストンを消す
+                event.setDropItems(false);
+            }
+        }
+    }
 }
 
 
