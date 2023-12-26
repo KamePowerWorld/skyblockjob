@@ -266,7 +266,8 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
         Location adventurerLocation = new Location(getServer().getWorld("world_the_end"), 91, 97, 104); // 冒険者の座標
         Location blacksmithLocation = new Location(getServer().getWorld("world_the_end"), 115, 35, 11); // 石工の座標
         Location bakeryLocation = new Location(getServer().getWorld("world_the_end"), 33, 60, -55); // パン屋の座標
-        Location ryousiLocation = new Location(getServer().getWorld("world_the_end"), 80, 140, 52); // パン屋の座標
+        Location ryousiLocation = new Location(getServer().getWorld("world_the_end"), 80, 140, 52); // 漁師の座標
+        Location logLocation = new Location(getServer().getWorld("world_the_end"), 131, 37, -38); // 木こりの座標
 
         boolean teleported = false;
         switch (customModelData) {
@@ -285,6 +286,11 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
             case 104:
                 event.getPlayer().teleport(ryousiLocation);
                 teleported = true;
+                break;
+            case 105:
+                event.getPlayer().teleport(logLocation);
+                teleported = true;
+                break;
         }
 
         // テレポートした場合、アイテムを1つ減らす
