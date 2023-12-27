@@ -8,3 +8,35 @@ denyArea:
     x: 100
     y: 100
     z: 100
+
+ticketTeleport:
+  # 冒険者ワールド
+  - id: 101
+    world: "world_the_end"
+    x: 0
+    y: 0
+    z: 0
+  # 鍛冶屋ワールド
+  - id: 102
+    world: "world_the_end"
+    x: 0
+    y: 0
+    z: 0
+  # パン屋ワールド
+  - id: 103
+    world: "world_the_end"
+    x: 0
+    y: 0
+    z: 0
+  # 漁師ワールド
+  - id: 104
+    world: "world_the_end"
+    x: 0
+    y: 0
+    z: 0
+  # 木こりワールド
+  - id: 105
+    world: "world_the_end"
+    x: 0
+    y: 0
+    z: 0

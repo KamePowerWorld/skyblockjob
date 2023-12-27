@@ -278,35 +278,21 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
 
         int customModelData = meta.getCustomModelData();
 
-        // それぞれの紙に対する特定の座標
-        Location adventurerLocation = new Location(getServer().getWorld("world_the_end"), 91, 97, 104); // 冒険者の座標
-        Location blacksmithLocation = new Location(getServer().getWorld("world_the_end"), 115, 35, 11); // 石工の座標
-        Location bakeryLocation = new Location(getServer().getWorld("world_the_end"), 33, 60, -55); // パン屋の座標
-        Location ryousiLocation = new Location(getServer().getWorld("world_the_end"), 80, 140, 52); // 漁師の座標
-        Location logLocation = new Location(getServer().getWorld("world_the_end"), 131, 37, -38); // 木こりの座標
-
+        // 紙のテレポートをコンフィグから取得
         boolean teleported = false;
-        switch (customModelData) {
-            case 101:
-                event.getPlayer().teleport(adventurerLocation);
+        List<Map<?, ?>> ticketTeleport = getConfig().getMapList("ticketTeleport");
+        for (Map<?, ?> map : ticketTeleport) {
+            if (map.get("id").equals(customModelData)) {
+                Location location = new Location(
+                        getServer().getWorld((String) map.get("world")),
+                        (int) map.get("x"),
+                        (int) map.get("y"),
+                        (int) map.get("z")
+                );
+                event.getPlayer().teleport(location);
                 teleported = true;
                 break;
-            case 102:
-                event.getPlayer().teleport(blacksmithLocation);
-                teleported = true;
-                break;
-            case 103:
-                event.getPlayer().teleport(bakeryLocation);
-                teleported = true;
-                break;
-            case 104:
-                event.getPlayer().teleport(ryousiLocation);
-                teleported = true;
-                break;
-            case 105:
-                event.getPlayer().teleport(logLocation);
-                teleported = true;
-                break;
+            }
         }
 
         // テレポートした場合、アイテムを1つ減らす
