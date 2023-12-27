@@ -208,7 +208,7 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
         } else if (chance < 80) { // 金の確率を30%に
             return new ItemStack(Material.GOLD_INGOT, 10);
         } else { // 銅の確率を20%に
-            return new ItemStack(Material.COPPER_INGOT, 10);
+            return new ItemStack(OAK_LOG, 64);
         }
     }
     private void dropFish(Location loc) {
