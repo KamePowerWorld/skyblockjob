@@ -37,11 +37,27 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
     private Random random = new Random();
     private final Map<UUID, Integer> lapisCount = new HashMap<>();
     private final Map<UUID, Set<UUID>> playerHorns = new HashMap<>();
+    private BoundingBox denyArea;
+    private World denyAreaWorld;
 
     @Override
     public void onEnable() {
         // Plugin startup logic
         getServer().getPluginManager().registerEvents(this, this);
+
+        // コンフィグ
+        saveDefaultConfig();
+
+        // 禁止エリアの範囲を設定
+        denyArea = new BoundingBox(
+                getConfig().getDouble("denyArea.min.x"),
+                getConfig().getDouble("denyArea.min.y"),
+                getConfig().getDouble("denyArea.min.z"),
+                getConfig().getDouble("denyArea.max.x"),
+                getConfig().getDouble("denyArea.max.y"),
+                getConfig().getDouble("denyArea.max.z")
+        );
+        denyAreaWorld = getServer().getWorld(Objects.requireNonNull(getConfig().getString("denyArea.world"), "denyArea.worldが指定されてません"));
     }
 
     @Override
@@ -420,12 +436,8 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
                 // 通常の右クリックでリスト内のプレイヤーを自分にテレポート
                 if (playerHorns.containsKey(playerUuid)) {
                     // 禁止エリアにいるかどうかをチェック
-                    BoundingBox box = new BoundingBox(
-                            295, 319, 45,
-                            224, 315, 24
-                    );
-                    if (player.getLocation().getWorld().getWorldType() == WorldType.NORMAL
-                            && box.contains(player.getLocation().toVector())) {
+                    if (player.getLocation().getWorld().equals(denyAreaWorld)
+                            && denyArea.contains(player.getLocation().toVector())) {
                         player.sendMessage("禁止エリアにいるため、招集できません");
                         return;
                     }
