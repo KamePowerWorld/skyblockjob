@@ -205,9 +205,11 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
         dropItem(event, Material.IRON_INGOT, random.nextInt(2));
         dropItem(event, Material.GOLD_INGOT, random.nextInt(2));
         dropItem(event, Material.COPPER_INGOT, random.nextInt(3));
+        dropItem(event, IRON_NUGGET, random.nextInt(20));
+        dropItem(event, GOLD_NUGGET, random.nextInt(20));
     }
 
-    private void dropItem(BlockBreakEvent event, Material item, int quantity) {
+    private void  dropItem(BlockBreakEvent event, Material item, int quantity) {
         event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), new ItemStack(item, quantity));
     }
 
