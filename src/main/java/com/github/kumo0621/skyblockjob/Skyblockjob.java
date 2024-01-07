@@ -142,95 +142,10 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
                 }
             }
         }
-        if (player.getScoreboard().getEntryTeam(player.getName()).getName().equals("石工")) {
-            // 鉱石ブロックのリスト
-            Material[] ores = {
-                    COAL_ORE,
-                    IRON_ORE,
-                    GOLD_ORE,
-                    Material.DIAMOND_ORE,
-                    Material.LAPIS_ORE,
-                    Material.EMERALD_ORE,
-                    Material.NETHER_QUARTZ_ORE,
-                    Material.NETHER_GOLD_ORE,
-                    Material.ANCIENT_DEBRIS,
-                    Material.COPPER_ORE,
-                    Material.DEEPSLATE_IRON_ORE,
-                    Material.DEEPSLATE_GOLD_ORE,
-                    Material.DEEPSLATE_DIAMOND_ORE,
-                    Material.DEEPSLATE_LAPIS_ORE,
-                    Material.DEEPSLATE_REDSTONE_ORE,
-                    Material.DEEPSLATE_EMERALD_ORE,
-                    Material.DEEPSLATE_COPPER_ORE,
-            };
 
-            // ブロックが鉱石かチェック
-            for (Material ore : ores) {
-                if (event.getBlock().getType() == ore) {
-                    // レコードの破片をドロップ
-                    ItemStack recordFragment = new ItemStack(Material.DISC_FRAGMENT_5, 1); // レコードの破片のアイテムを選択
-                    player.getWorld().dropItemNaturally(event.getBlock().getLocation(), recordFragment);
-                    break;
-                }
-            }
-        }
-        if (player.getScoreboard().getEntryTeam(player.getName()).getName().equals("石工")) {
-            switch (material) {
-                case COAL_ORE:
-                case COPPER_ORE:
-                case GOLD_ORE:
-                case IRON_ORE:
-                    onUPItem(event);
-                    event.setDropItems(false);
-                    break;
-                default:
-                    break;
-            }
-        }if (event.getBlock().getType() != Material.OBSIDIAN) {
-            return;
-        }
-
-        if (player.getScoreboard().getEntryTeam(player.getName()).getName().equals("石工")) {
-            event.setDropItems(false);
-            ItemStack item = generateRandomDrop(player);
-            if (item != null) {
-                int fortuneLevel = player.getInventory().getItemInMainHand().getEnchantmentLevel(org.bukkit.enchantments.Enchantment.LOOT_BONUS_BLOCKS);
-                int amount = (int) (item.getAmount() * (1 + 0.5 * fortuneLevel));
-                item.setAmount(amount);
-                event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), item);
-            }
-        }
     }
 
-    private void onUPItem(BlockBreakEvent event) {
-        dropItem(event, Material.COAL, random.nextInt(3));
-        dropItem(event, Material.IRON_INGOT, random.nextInt(2));
-        dropItem(event, Material.GOLD_INGOT, random.nextInt(2));
-        dropItem(event, Material.COPPER_INGOT, random.nextInt(3));
-        dropItem(event, IRON_NUGGET, random.nextInt(20));
-        dropItem(event, GOLD_NUGGET, random.nextInt(20));
-    }
 
-    private void  dropItem(BlockBreakEvent event, Material item, int quantity) {
-        event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), new ItemStack(item, quantity));
-    }
-
-    private ItemStack generateRandomDrop(Player player) {
-        Random random = new Random();
-        int chance = random.nextInt(100);
-
-        if (chance < 10) { // ダイヤモンドの確率を10%に
-            return new ItemStack(Material.DIAMOND, 10);
-        } else if (chance < 20) { // ネザライトの確率を10%に
-            return new ItemStack(Material.NETHERITE_SCRAP, 10);
-        } else if (chance < 50) { // 鉄の確率を30%に
-            return new ItemStack(Material.IRON_INGOT, 10);
-        } else if (chance < 80) { // 金の確率を30%に
-            return new ItemStack(Material.GOLD_INGOT, 10);
-        } else { // 銅の確率を20%に
-            return new ItemStack(OAK_LOG, 64);
-        }
-    }
     private void dropFish(Location loc) {
         Random random = new Random();
         int numberOfFish = random.nextInt(5) + 15; // 5から9までのランダムな数の魚
