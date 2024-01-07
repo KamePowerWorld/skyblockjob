@@ -117,7 +117,9 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
         for (int i = 0; i < 10; i++) {
             world.dropItemNaturally(loc, new ItemStack(Material.RAW_GOLD));
         }
-
+        for (int i = 0; i < 5; i++) {
+            world.dropItemNaturally(loc, new ItemStack(IRON_NUGGET));
+        }
         // 鉄鉱石を3個ドロップ
         for (int i = 0; i < 3; i++) {
             world.dropItemNaturally(loc, new ItemStack(Material.RAW_IRON));
