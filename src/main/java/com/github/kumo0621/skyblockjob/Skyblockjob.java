@@ -1,12 +1,10 @@
 package com.github.kumo0621.skyblockjob;
 
-import io.papermc.paper.event.player.ChatEvent;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.WorldType;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -15,12 +13,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
-import org.bukkit.event.entity.ItemDespawnEvent;
-import org.bukkit.event.inventory.FurnaceSmeltEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -37,8 +30,22 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
     private Random random = new Random();
     private final Map<UUID, Integer> lapisCount = new HashMap<>();
     private final Map<UUID, Set<UUID>> playerHorns = new HashMap<>();
-    private BoundingBox denyArea;
-    private World denyAreaWorld;
+
+    private static class DenyArea {
+        private final World world;
+        private final BoundingBox boundingBox;
+
+        public DenyArea(World world, BoundingBox boundingBox) {
+            this.world = world;
+            this.boundingBox = boundingBox;
+        }
+
+        public boolean contains(Location location) {
+            return world.equals(location.getWorld()) && boundingBox.contains(location.toVector());
+        }
+    }
+
+    private List<DenyArea> denyAreaList;
 
     @Override
     public void onEnable() {
@@ -49,15 +56,22 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
         saveDefaultConfig();
 
         // 禁止エリアの範囲を設定
-        denyArea = new BoundingBox(
-                getConfig().getDouble("denyArea.min.x"),
-                getConfig().getDouble("denyArea.min.y"),
-                getConfig().getDouble("denyArea.min.z"),
-                getConfig().getDouble("denyArea.max.x"),
-                getConfig().getDouble("denyArea.max.y"),
-                getConfig().getDouble("denyArea.max.z")
-        );
-        denyAreaWorld = getServer().getWorld(Objects.requireNonNull(getConfig().getString("denyArea.world"), "denyArea.worldが指定されてません"));
+        denyAreaList = new ArrayList<>();
+        Objects.requireNonNull(getConfig().getList("denyAreaList")).forEach(obj -> {
+            Map<?, ?> area = (Map<?, ?>) obj;
+            World world = getServer().getWorld(Objects.requireNonNull((String) area.get("world")));
+            Map<?, ?> min = (Map<?, ?>) area.get("min");
+            Map<?, ?> max = (Map<?, ?>) area.get("max");
+            BoundingBox boundingBox = new BoundingBox(
+                    (int) min.get("x"),
+                    (int) min.get("y"),
+                    (int) min.get("z"),
+                    (int) max.get("x"),
+                    (int) max.get("y"),
+                    (int) max.get("z")
+            );
+            denyAreaList.add(new DenyArea(world, boundingBox));
+        });
     }
 
     @Override
@@ -143,7 +157,10 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
             }
         }
 
+
     }
+
+
 
 
     private void dropFish(Location loc) {
@@ -341,8 +358,7 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
                 // 通常の右クリックでリスト内のプレイヤーを自分にテレポート
                 if (playerHorns.containsKey(playerUuid)) {
                     // 禁止エリアにいるかどうかをチェック
-                    if (player.getLocation().getWorld().equals(denyAreaWorld)
-                            && denyArea.contains(player.getLocation().toVector())) {
+                    if (denyAreaList.stream().anyMatch(denyArea -> denyArea.contains(player.getLocation()))) {
                         player.sendMessage("禁止エリアにいるため、招集できません");
                         return;
                     }
@@ -376,6 +392,7 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
         }
         return null;
     }
+
     @EventHandler
     public void onPistonBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
@@ -391,8 +408,8 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
                     block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.CHAIN));
                 } else if (chance < 60) {
                     block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.REDSTONE));
-                }else if (chance < 90) {
-                        block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(IRON_INGOT));
+                } else if (chance < 90) {
+                    block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(IRON_INGOT));
 
                 }
                 // ピストンを消す
