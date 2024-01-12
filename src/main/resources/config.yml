@@ -49,3 +49,33 @@ ticketTeleport:
     x: 0
     y: 0
     z: 0
+  # 剣士ワールド
+  - id: 106
+    world: "world_the_end"
+    x: 0
+    y: 0
+    z: 0
+  # 魔法使いワールド
+  - id: 107
+    world: "world_the_end"
+    x: 0
+    y: 0
+    z: 0
+  # 鍛冶屋ワールド
+  - id: 108
+    world: "world_the_end"
+    x: 0
+    y: 0
+    z: 0
+  # 裁縫師ワールド
+  - id: 109
+    world: "world_the_end"
+    x: 0
+    y: 0
+    z: 0
+  # 魔法研究員ワールド
+  - id: 110
+    world: "world_the_end"
+    x: 0
+    y: 0
+    z: 0

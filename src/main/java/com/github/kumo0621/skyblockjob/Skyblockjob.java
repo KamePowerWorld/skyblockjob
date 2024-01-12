@@ -1,5 +1,6 @@
 package com.github.kumo0621.skyblockjob;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -18,6 +19,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.RayTraceResult;
@@ -45,6 +47,9 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
         }
     }
 
+    private static final int MAX_ITEM_COUNT = 2; // 許可されるアイテムの最大数
+    private static final int MIN_MODEL_DATA = 106; // 最小のカスタムモデルデータ
+    private static final int MAX_MODEL_DATA = 111;
     private List<DenyArea> denyAreaList;
 
     @Override
@@ -72,7 +77,42 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
             );
             denyAreaList.add(new DenyArea(world, boundingBox));
         });
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                for (Player player : Bukkit.getServer().getOnlinePlayers()) {
+                    enforceCustomModelDataLimit(player);
+                }
+            }
+        }.runTaskTimer(this, 0L, 20L * 10); // 10秒ごとに実行
     }
+
+    private void enforceCustomModelDataLimit(Player player) {
+        int count = 0;
+
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (item != null && item.hasItemMeta()) {
+                ItemMeta meta = item.getItemMeta();
+                if (meta.hasCustomModelData()) {
+                    int data = meta.getCustomModelData();
+                    if (data >= MIN_MODEL_DATA && data <= MAX_MODEL_DATA) {
+                        count += item.getAmount();
+                        if (count > MAX_ITEM_COUNT) {
+                            int excess = count - MAX_ITEM_COUNT;
+                            if (item.getAmount() > excess) {
+                                item.setAmount(item.getAmount() - excess);
+                                break;
+                            } else {
+                                player.getInventory().remove(item);
+                                count -= item.getAmount();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 
     @Override
     public void onDisable() {
@@ -120,6 +160,9 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
         for (int i = 0; i < 5; i++) {
             world.dropItemNaturally(loc, new ItemStack(IRON_NUGGET));
         }
+        for (int i = 0; i < 5; i++) {
+            world.dropItemNaturally(loc, new ItemStack(GOLD_NUGGET));
+        }
         // 鉄鉱石を3個ドロップ
         for (int i = 0; i < 3; i++) {
             world.dropItemNaturally(loc, new ItemStack(Material.RAW_IRON));
@@ -159,8 +202,6 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
 
 
     }
-
-
 
 
     private void dropFish(Location loc) {
@@ -231,14 +272,6 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
             }
         }
 
-        // テレポートした場合、アイテムを1つ減らす
-        if (teleported) {
-            if (item.getAmount() > 1) {
-                item.setAmount(item.getAmount() - 1);
-            } else {
-                event.getPlayer().getInventory().removeItem(item);
-            }
-        }
     }
 
     @EventHandler
@@ -281,7 +314,7 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
             ThrownExpBottle thrownExpBottle = (ThrownExpBottle) event.getEntity();
             if (thrownExpBottle.getShooter() instanceof Player) {
                 Player player = (Player) thrownExpBottle.getShooter();
-                Team team = player.getScoreboard().getTeam("パン屋");
+                Team team = player.getScoreboard().getTeam("魔法研究員");
                 if (team != null && team.hasEntry(player.getName())) {
 
                     for (Item item : thrownExpBottle.getWorld().getEntitiesByClass(Item.class)) {
@@ -300,6 +333,35 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
 
                                     // エンチャントを追加
                                     meta.addStoredEnchant(Enchantment.PROTECTION_ENVIRONMENTAL, 1, true);
+
+                                    // 変更したメタデータをItemStackに適用
+                                    enchantedBook.setItemMeta(meta);
+                                    // エンチャント本をドロップ
+                                    item.getWorld().dropItemNaturally(item.getLocation(), enchantedBook);
+
+                                    // ラピスラズリを消去
+                                    item.remove();
+
+                                    // カウントをリセット
+                                    lapisCount.remove(itemId);
+                                }
+                            }
+                        }
+                        if (item.getItemStack().getType() == IRON_INGOT && item.getItemStack().getAmount() == 1) {
+                            if (item.getLocation().distance(thrownExpBottle.getLocation()) < 5.0) { // 5ブロック以内を検出範囲とする
+                                UUID itemId = item.getUniqueId();
+                                int count = lapisCount.getOrDefault(itemId, 0);
+                                count++;
+
+                                if (count >= 64) {
+                                    // ダメージ軽減のエンチャント本を生成
+                                    ItemStack enchantedBook = new ItemStack(Material.ENCHANTED_BOOK);
+
+                                    // ItemStackのメタデータを取得 (EnchantmentStorageMetaにキャスト)
+                                    EnchantmentStorageMeta meta = (EnchantmentStorageMeta) enchantedBook.getItemMeta();
+
+                                    // エンチャントを追加
+                                    meta.addStoredEnchant(Enchantment.DAMAGE_ALL, 1, true);
 
                                     // 変更したメタデータをItemStackに適用
                                     enchantedBook.setItemMeta(meta);
