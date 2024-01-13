@@ -47,9 +47,6 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
         }
     }
 
-    private static final int MAX_ITEM_COUNT = 2; // 許可されるアイテムの最大数
-    private static final int MIN_MODEL_DATA = 106; // 最小のカスタムモデルデータ
-    private static final int MAX_MODEL_DATA = 111;
     private List<DenyArea> denyAreaList;
 
     @Override
@@ -77,40 +74,6 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
             );
             denyAreaList.add(new DenyArea(world, boundingBox));
         });
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-                    enforceCustomModelDataLimit(player);
-                }
-            }
-        }.runTaskTimer(this, 0L, 20L * 10); // 10秒ごとに実行
-    }
-
-    private void enforceCustomModelDataLimit(Player player) {
-        int count = 0;
-
-        for (ItemStack item : player.getInventory().getContents()) {
-            if (item != null && item.hasItemMeta()) {
-                ItemMeta meta = item.getItemMeta();
-                if (meta.hasCustomModelData()) {
-                    int data = meta.getCustomModelData();
-                    if (data >= MIN_MODEL_DATA && data <= MAX_MODEL_DATA) {
-                        count += item.getAmount();
-                        if (count > MAX_ITEM_COUNT) {
-                            int excess = count - MAX_ITEM_COUNT;
-                            if (item.getAmount() > excess) {
-                                item.setAmount(item.getAmount() - excess);
-                                break;
-                            } else {
-                                player.getInventory().remove(item);
-                                count -= item.getAmount();
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 
 
