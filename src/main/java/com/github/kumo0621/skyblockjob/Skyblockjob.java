@@ -11,6 +11,7 @@ import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityBreedEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
@@ -93,7 +94,7 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
                 if (source instanceof Player) {
                     Player player = (Player) source;
                     Team team = player.getScoreboard().getEntryTeam(player.getName());
-                    if (team != null && team.getName().equals("漁師")) {
+                    if (team != null && team.getName().equals("ryousi")) {
                         // 魚をランダムに生成
                         dropFish(loc);
                         // TNTの近くにあるトライデントを探す
@@ -117,17 +118,17 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
         if (world == null) return;
 
         // 金鉱石を10個ドロップ
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 1; i++) {
             world.dropItemNaturally(loc, new ItemStack(Material.RAW_GOLD));
         }
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 2; i++) {
             world.dropItemNaturally(loc, new ItemStack(IRON_NUGGET));
         }
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 2; i++) {
             world.dropItemNaturally(loc, new ItemStack(GOLD_NUGGET));
         }
         // 鉄鉱石を3個ドロップ
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 1; i++) {
             world.dropItemNaturally(loc, new ItemStack(Material.RAW_IRON));
         }
         for (int i = 0; i < 1; i++) {
@@ -142,7 +143,7 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
         ItemStack tool = player.getInventory().getItemInMainHand();
         Material material = block.getType();
         // プレイヤーが「電気工事士」チームに属しているかどうかをチェック
-        if (player.getScoreboard().getEntryTeam(player.getName()).getName().equals("鍛冶屋")) {
+        if (player.getScoreboard().getEntryTeam(player.getName()).getName().equals("kikori")) {
             // ブロックがレッドストーン鉱石かどうかをチェック
             if (event.getBlock().getType() == Material.REDSTONE_ORE) {
                 // レッドストーンがパワーを受けているかどうかをチェック
@@ -153,24 +154,48 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
                         event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), new ItemStack(Material.REDSTONE, 1));
                     } else {
                         // ラピスラズリをドロップ
-                        int amountLapis = 1 + random.nextInt(2);
+                        int amountLapis = 1;
                         event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), new ItemStack(Material.LAPIS_LAZULI, amountLapis));
                         // 石炭をドロップ
-                        int amountCoal = 1 + random.nextInt(2);
+                        int amountCoal = 1 + random.nextInt(1);
                         event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), new ItemStack(COAL, amountCoal));
                     }
                 }
             }
+        } else if (player.getScoreboard().getEntryTeam(player.getName()).getName().equals("isiku")) {
+            if (event.getBlock().getType() == Material.STONE) {
+                if (tool.containsEnchantment(Enchantment.SILK_TOUCH)) {
+                    event.setDropItems(false);
+                    int amountLapis = 1 + random.nextInt(1);
+                    event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), new ItemStack(IRON_ORE, amountLapis));
+                } else {
+                    // 鉄鉱石をドロップ
+                    event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), new ItemStack(IRON_ORE, 1));
+
+                }
+            }
+        } else if (player.getScoreboard().getEntryTeam(player.getName()).getName().equals("kikori")) {
+            if (event.getBlock().getType() == JUNGLE_LOG) {
+
+                if (tool.containsEnchantment(Enchantment.SILK_TOUCH)) {
+                    event.setDropItems(false);
+                    // 鉄鉱石をドロップ
+                    int amountLapis = 1 + random.nextInt(2);
+                    event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), new ItemStack(GUNPOWDER, amountLapis));
+                } else  {
+                    event.setDropItems(false);
+                    event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), new ItemStack(GUNPOWDER, 1));
+
+                }
+            }
         }
-
-
     }
 
 
     private void dropFish(Location loc) {
         Random random = new Random();
-        int numberOfFish = random.nextInt(5) + 15; // 5から9までのランダムな数の魚
-        int numberOfSeaweed = random.nextInt(3) + 5; // 1から3までのランダムな数の海藻
+        int numberOfFish = random.nextInt(5) ; // 5から9までのランダムな数の魚
+        int numberOfSeaweed = random.nextInt(3); // 1から3までのランダムな数の海藻
         int numberOfInkSacs = random.nextInt(2); // 0または1のイカスミ
         // 魚のドロップ
         for (int i = 0; i < numberOfFish; i++) {
@@ -277,7 +302,7 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
             ThrownExpBottle thrownExpBottle = (ThrownExpBottle) event.getEntity();
             if (thrownExpBottle.getShooter() instanceof Player) {
                 Player player = (Player) thrownExpBottle.getShooter();
-                Team team = player.getScoreboard().getTeam("魔法研究員");
+                Team team = player.getScoreboard().getTeam("nougyou");
                 if (team != null && team.hasEntry(player.getName())) {
 
                     for (Item item : thrownExpBottle.getWorld().getEntitiesByClass(Item.class)) {
@@ -441,6 +466,16 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
                 event.setDropItems(false);
             }
         }
+    }
+
+    @EventHandler
+    public void onEntityBreed(EntityBreedEvent event) {
+        // エンティティが交配されたときのイベント
+        Random random = new Random();
+        int amountToDrop = random.nextInt(2); // 1から3のランダムな数
+
+        // レッドストーンダストをドロップ
+        event.getEntity().getWorld().dropItemNaturally(event.getEntity().getLocation(), new ItemStack(Material.REDSTONE, amountToDrop));
     }
 }
 
