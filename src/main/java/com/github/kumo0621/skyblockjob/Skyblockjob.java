@@ -1,9 +1,6 @@
 package com.github.kumo0621.skyblockjob;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
@@ -11,11 +8,16 @@ import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityBreedEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
+import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemBreakEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -113,6 +115,136 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
         }
     }
 
+    @EventHandler
+    public void onAnvilPlace(BlockPlaceEvent event) {
+        Player player = event.getPlayer();
+        Team team = player.getScoreboard().getEntryTeam(player.getName());
+        if (team != null && team.getName().equals("nougyou")) {
+            if (event.getBlock().getType() == OBSIDIAN) {
+                Location anvilLocation = event.getBlock().getLocation();
+                checkAndActivateHarvest(anvilLocation, player);
+            }
+        }
+    }
+
+    private void checkAndActivateHarvest(Location location, Player player) {
+        // Check in a radius of 3 for potatoes and carrots
+        int potatoesCount = 0, carrotsCount = 0;
+        for (int x = -3; x <= 3; x++) {
+            for (int z = -3; z <= 3; z++) {
+                Block block = location.clone().add(x, 0, z).getBlock();
+                if (block.getType() == Material.POTATOES) {
+                    potatoesCount++;
+                } else if (block.getType() == Material.CARROTS) {
+                    carrotsCount++;
+                }
+            }
+        }
+
+        // If conditions are met, drop items immediately
+        if (potatoesCount >= 5 && carrotsCount >= 5) {
+            int cropsCount = 0;
+            for (int x = -5; x <= 5; x++) {
+                for (int z = -5; z <= 5; z++) {
+                    Block block = location.clone().add(x, 0, z).getBlock();
+                    if (block.getType() == Material.WHEAT || block.getType() == Material.POTATOES || block.getType() == Material.CARROTS) {
+                        cropsCount++;
+                    }
+                }
+            }
+            if (cropsCount > 0) {
+                ItemStack drop = new ItemStack(Material.WHEAT, cropsCount - 10);
+                location.getWorld().dropItemNaturally(location.add(0.5, 1, 0.5), drop);
+            }
+            player.sendMessage(ChatColor.GREEN + "設置が完了しました。");
+        } else {
+            player.sendMessage(ChatColor.RED + "3種類の作物を（人参・じゃがいも・種）を半径5マスに設置してください。");
+        }
+    }
+
+    @EventHandler
+    public void onPlayerFish(PlayerFishEvent event) {
+        Player player = event.getPlayer();
+        Team team = player.getScoreboard().getEntryTeam(player.getName());
+        if (team != null && team.getName().equals("ryousi")) {
+            if (event.getState() == PlayerFishEvent.State.CAUGHT_FISH) {
+                Random random = new Random();
+                if (random.nextDouble() < 0.5) {
+                    ItemStack specialFish1 = new ItemStack(Material.COD, 1);
+                    ItemMeta meta1 = specialFish1.getItemMeta();
+                    meta1.setDisplayName(ChatColor.GOLD + "Golden Fish");
+                    specialFish1.setItemMeta(meta1);
+
+                    ItemStack specialFish2 = new ItemStack(Material.SALMON, 1);
+                    ItemMeta meta2 = specialFish2.getItemMeta();
+                    meta2.setDisplayName(ChatColor.BLUE + "Mystic Fish");
+                    specialFish2.setItemMeta(meta2);
+
+                    event.getPlayer().getInventory().addItem(specialFish1);
+                    event.getPlayer().getInventory().addItem(specialFish2);
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onItemBreak(PlayerItemBreakEvent event) {
+        Player player = event.getPlayer();
+        Team team = player.getScoreboard().getEntryTeam(player.getName());
+        if (team != null && team.getName().equals("isiku")) {
+
+
+            // アイテムが壊れたときの処理
+            ItemStack brokenItem = event.getBrokenItem();
+
+            // 壊れたアイテムが鉄のピッケルかどうかを確認
+            if (brokenItem.getType() == Material.IRON_PICKAXE) {
+                // 新しい木のピッケルを作成
+                ItemStack newItem = new ItemStack(Material.WOODEN_PICKAXE, 1);
+
+                // 耐久値を設定 (最大耐久値から58減らす)
+                newItem.setDurability((short) (Material.WOODEN_PICKAXE.getMaxDurability() - 1));
+
+                ItemMeta meta = newItem.getItemMeta();
+
+                // カスタムモデルデータを設定
+                meta.setCustomModelData(1);
+
+                // アイテムの表示名を設定
+                meta.setDisplayName("鍛冶屋に売りつけると高い");
+
+                newItem.setItemMeta(meta);
+
+                // アイテムをプレイヤーの足元にドロップ
+                event.getPlayer().getWorld().dropItemNaturally(event.getPlayer().getLocation(), newItem);
+            }
+
+        }
+    }
+
+    @EventHandler
+    public void onPlayerToggleSneak(PlayerToggleSneakEvent event) {
+        Player player = event.getPlayer();
+        Team team = player.getScoreboard().getEntryTeam(player.getName());
+        if (team != null && team.getName().equals("kaziya")) {
+            if (event.isSneaking()) {  // プレイヤーがしゃがんだ時
+                Random random1 = new Random();
+                int i = random1.nextInt(10);
+                if (i == 1) {
+                    ItemStack itemInHand = event.getPlayer().getInventory().getItemInMainHand();  // 手に持っているアイテムを取得
+
+                    if (itemInHand != null && itemInHand.getType() != Material.AIR && itemInHand.getType().getMaxDurability() > 0) {
+                        // アイテムが空気ではなく、耐久値を持つアイテムの場合
+                        if (itemInHand.getDurability() > 0) {  // 耐久値が0より大きい場合
+                            itemInHand.setDurability((short) (itemInHand.getDurability() - 1));  // 耐久値を1回復
+                            event.getPlayer().sendMessage("アイテムの耐久値を回復しました。");  // プレイヤーに通知
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private void dropOres(Location loc) {
         World world = loc.getWorld();
         if (world == null) return;
@@ -182,7 +314,7 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
                     // 鉄鉱石をドロップ
                     int amountLapis = 1 + random.nextInt(2);
                     event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), new ItemStack(GUNPOWDER, amountLapis));
-                } else  {
+                } else {
                     event.setDropItems(false);
                     event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), new ItemStack(GUNPOWDER, 1));
 
@@ -194,7 +326,7 @@ public final class Skyblockjob extends JavaPlugin implements Listener {
 
     private void dropFish(Location loc) {
         Random random = new Random();
-        int numberOfFish = random.nextInt(5) ; // 5から9までのランダムな数の魚
+        int numberOfFish = random.nextInt(5); // 5から9までのランダムな数の魚
         int numberOfSeaweed = random.nextInt(3); // 1から3までのランダムな数の海藻
         int numberOfInkSacs = random.nextInt(2); // 0または1のイカスミ
         // 魚のドロップ
